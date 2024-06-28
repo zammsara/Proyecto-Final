@@ -2,6 +2,8 @@
 #include <string.h>
 #include "variables.h"
 #include <locale.h>
+#include <string>
+#include <fstream>
 
 #define ANSI_COLOR_WH_BACK "\x1b[47m"
 #define ANSI_COLOR_RESET "\x1b[0m"
@@ -26,6 +28,58 @@ void showReg(INFORMACION * c);
 void editarRegistro();
 int menu();
 void principal();
+void usuario();
+
+
+void usuario(){
+    string usuario, password, storedUsername, storedPassword;
+
+    // Registro de nombre de usuario y contraseña
+    cout << ANSI_COLOR_WH_BACK << "Registro de usuario"  << ANSI_COLOR_RESET<<endl;
+    cout << "-------------------------------------------------------------------------\n";
+    cout << "Ingrese su nombre de usuario: ";
+    getline(cin, usuario);
+    cout << "Ingrese su contraseña: ";
+    getline(cin, password);
+    cout << "Informacion de usuario guardada... ";
+    cout << "-------------------------------------------------------------------------\n";
+
+    // Guardar nombre de usuario y contraseña en un archivo
+    ofstream file("usuario.txt");
+    file << usuario << ":" << password << endl;
+    file.close();
+
+    // Solicitar nombre de usuario y contraseña
+    cout << ANSI_COLOR_WH_BACK << "Inicio de sesión"  << ANSI_COLOR_RESET<<endl;
+    cout << "Ingrese su nombre de usuario: ";
+    getline(cin, usuario);
+
+    // Leer nombre de usuario y contraseña almacenados
+    ifstream fileRead("usuario.txt");
+    getline(fileRead, storedUsername, ':');
+    getline(fileRead, storedPassword);
+    fileRead.close();
+
+    while (true) {
+        cout << "Ingrese su contraseña: ";
+        getline(cin, password);
+
+        if (usuario == storedUsername && password == storedPassword) {
+            cout << "Contraseña correcta! Bienvenido, " << usuario << endl;
+            cout << "-------------------------------------------------------------------------\n";
+            break;
+        } else {
+            cout << "Contraseña incorrecta. Intente de nuevo." << endl;
+            cout << "-------------------------------------------------------------------------\n";
+        }
+    }
+
+    void principal();
+
+    principal();
+}
+
+
 
 
 void registroPrestamos(INFORMACION * c){
