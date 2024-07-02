@@ -1,6 +1,7 @@
 #define MAX_REG 500
 #define MAX_CHAR 50
 
+
 struct INFORMACION{
     int CodigoPrestamo;
     char NombreCompleto[MAX_CHAR];

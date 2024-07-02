@@ -13,78 +13,74 @@ using namespace std;
 INFORMACION registros[MAX_REG];
 int pos = 0;
 
-int obtenerReg(int CodigoPrestamo);
-void registroPrestamos(INFORMACION * c);
-void editar(INFORMACION *c, int CodigoPrestamo);
-void eliminar(int CodigoPrestamo);
-void mostrarPrestamos();
-INFORMACION buscar(int CodigoPrestamo);
-void solicitarDatos();
-void editarxRegistro();
-void eliminarxRegistro();
-void buscarxCodigoPrestamo();
-void mostrarTPrestamos();
-void showReg(INFORMACION * c);
-void editarRegistro();
+//Menu
 int menu();
 void principal();
-void usuario();
+//Obtener un registro
+int obtenerReg(int CodigoPrestamo);
+void showReg(INFORMACION * c);
+//Registrar un prestamo
+void solicitarDatos();
+void registroPrestamos(INFORMACION * c);
+int ultimoCodigoPrestamo = 0; // Variable para almacenar la última ID utilizada
+//Editar un prestamo
+void editarxRegistro();
+INFORMACION buscar(int CodigoPrestamo);
+//Eliminar registro
+void eliminar(int CodigoPrestamo);
+void eliminarxRegistro();
+//Buscar un prestamo
+void buscarxCodigoPrestamo();
+//Mostrar todos los prestamos
+void mostrarTPrestamos();
+//Guardado de archivos
+int cargarInfo();
+void escribirInfo(const INFORMACION &c);
+void guardarTodo();
+
+//Registro de usuarios
+void usuarios();
+void nuevoUsuario();
+void ingresar();
 
 
-void usuario(){
-    string usuario, password, storedUsername, storedPassword;
-
-    // Registro de nombre de usuario y contraseña
-    cout << ANSI_COLOR_WH_BACK << "Registro de usuario"  << ANSI_COLOR_RESET<<endl;
-    cout << "-------------------------------------------------------------------------\n";
-    cout << "Ingrese su nombre de usuario: ";
-    getline(cin, usuario);
-    cout << "Ingrese su contraseña: ";
-    getline(cin, password);
-    cout << "Informacion de usuario guardada... ";
-    cout << "-------------------------------------------------------------------------\n";
-
-    // Guardar nombre de usuario y contraseña en un archivo
-    ofstream file("usuario.txt");
-    file << usuario << ":" << password << endl;
-    file.close();
-
-    // Solicitar nombre de usuario y contraseña
-    cout << ANSI_COLOR_WH_BACK << "Inicio de sesión"  << ANSI_COLOR_RESET<<endl;
-    cout << "Ingrese su nombre de usuario: ";
-    getline(cin, usuario);
-
-    // Leer nombre de usuario y contraseña almacenados
-    ifstream fileRead("usuario.txt");
-    getline(fileRead, storedUsername, ':');
-    getline(fileRead, storedPassword);
-    fileRead.close();
-
-    while (true) {
-        cout << "Ingrese su contraseña: ";
-        getline(cin, password);
-
-        if (usuario == storedUsername && password == storedPassword) {
-            cout << "Contraseña correcta! Bienvenido, " << usuario << endl;
-            cout << "-------------------------------------------------------------------------\n";
-            break;
-        } else {
-            cout << "Contraseña incorrecta. Intente de nuevo." << endl;
-            cout << "-------------------------------------------------------------------------\n";
+void inicializarUltimoCodigoPrestamo() 
+{
+    ifstream archivo("Prestamos.txt");
+    int codigoPrestamo;
+    if (archivo.is_open()) {
+        while (archivo >> codigoPrestamo) {
+            if (codigoPrestamo > ultimoCodigoPrestamo) {
+                ultimoCodigoPrestamo = codigoPrestamo;
+            }
         }
+        archivo.close();
     }
-
-    void principal();
-
-    principal();
 }
 
+int existeCodigoPrestamo(int codigoPrestamo) {
+    for (int i = 0; i < pos; i++) {
+        if (registros[i].CodigoPrestamo == codigoPrestamo) {
+            return i;
+        }
+    }
+    return -1;
+}
 
-
-
-void registroPrestamos(INFORMACION * c){
-    registros[pos] = *c;
-    pos++;
+void registroPrestamos(INFORMACION * c) {
+    if (existeCodigoPrestamo(c->CodigoPrestamo) == -1) { 
+        registros[pos] = *c;
+        pos++;
+        if (c->CodigoPrestamo > ultimoCodigoPrestamo) {
+            ultimoCodigoPrestamo = c->CodigoPrestamo;
+        }
+    } else {
+        for (int i = 0; i < pos; i++) {
+            if (registros[i].CodigoPrestamo == c->CodigoPrestamo) {
+                registros[i] = *c;
+            }
+        }
+    }
 }
 
 
@@ -132,7 +128,9 @@ int menu(){
 
 void principal()
 {
+    inicializarUltimoCodigoPrestamo(); 
     int op;
+    pos = cargarInfo();
     do
     {
         op = menu();
@@ -164,33 +162,38 @@ void principal()
 }
 
 
-void solicitarDatos(){
+void solicitarDatos() {
     INFORMACION registros;
     cout << "-------------------------------------------------------------------------\n";
-    cout << ANSI_COLOR_WH_BACK << "Registro de prestamo"  << ANSI_COLOR_RESET<<endl;
-    cout << "Digite el codigo del prestamo: ";
-    cin >> registros.CodigoPrestamo;
+    cout << ANSI_COLOR_WH_BACK << "Registro de prestamo"  << ANSI_COLOR_RESET << endl;
+    registros.CodigoPrestamo = ++ultimoCodigoPrestamo;
+    cout << "Codigo de prestamo: " << registros.CodigoPrestamo << endl;
     cout << "Digite el nombre del cliente: ";
-    scanf(" %[^\n]", registros.NombreCompleto);
+    cin.ignore();
+    cin.getline(registros.NombreCompleto, 50);
     cout << "Digite el numero de cedula del cliente: ";
-    scanf(" %[^\n]", registros.NumeroCedula);
+    cin.getline(registros.NumeroCedula, 20);
     cout << "Digite el numero telefonico del cliente: ";
-    scanf(" %[^\n]", registros.NumeroTelefonico);
+    cin.getline(registros.NumeroTelefonico, 20);
     cout << "Digite la cantidad prestada: ";
-    scanf(" %[^\n]", registros.CantPrestada);
+    cin.getline(registros.CantPrestada, 20);
     cout << "Digite la fecha del prestamo: ";
-    scanf(" %[^\n]", registros.FechaPrestamo);
+    cin.getline(registros.FechaPrestamo, 20);
     cout << "Digite la fecha establecida para el pago final: ";
-    scanf(" %[^\n]", registros.PagoFinal);
+    cin.getline(registros.PagoFinal, 20);
     cout << "Digite la tasa de intereses: ";
-    scanf(" %[^\n]", registros.Intereses);
+    cin.getline(registros.Intereses, 20);
     cout << "En caso de haber fiador, complete la siguiente informacion:\n";
     cout << "Digite el nombre completo de el fiador: ";
-    scanf(" %[^\n]", registros.NombreFiador);
+    cin.getline(registros.NombreFiador, 50);
     cout << "Digite el numero de cedula de el fiador: ";
-    scanf(" %[^\n]", registros.CedulaFiador);
+    cin.getline(registros.CedulaFiador, 20);
     registroPrestamos(&registros);
+    pos++;
+    INFORMACION c = registros;
+    escribirInfo(c); 
     cout << "Registro de prestamo guardado....\n";
+    cout << "-------------------------------------------------------------------------\n";
 }
 
 void editarxRegistro() {
@@ -204,7 +207,7 @@ void editarxRegistro() {
         cout << "Registro no encontrado...\n" << endl;
         return;
     }
-    INFORMACION c;
+    INFORMACION c = registros[index];
     cout << "Digite el nuevo nombre del cliente: ";
     scanf(" %[^\n]", c.NombreCompleto);
     cout << "Digite el nuevo numero de cedula del cliente: ";
@@ -225,26 +228,10 @@ void editarxRegistro() {
     cout << "Digite el nuevo numero de cedula de el fiador: ";
     scanf(" %[^\n]", c.CedulaFiador);
     registros[index] = c;
+    guardarTodo();
     cout << "Registro de prestamo actualizado....\n";
+    cout << "-------------------------------------------------------------------------\n";
 }
-
-void eliminar(int CodigoPrestamo){
-    int pos = obtenerReg(CodigoPrestamo);
-    if(pos != -1)
-    {
-        for(int i = pos; i < MAX_REG - 1; i++){
-            registros[i] = registros[i + 1];
-        }
-        pos--;
-        cout << "Registro eliminado...\n";
-        cout << "-------------------------------------------------------------------------\n";
-    } else 
-    {
-        cout << "Registro no encontrado..." << endl;
-        cout << "-------------------------------------------------------------------------\n";
-    }
-}
-
 void eliminarxRegistro()
 {
     int CodigoPrestamo;
@@ -255,22 +242,43 @@ void eliminarxRegistro()
     eliminar(CodigoPrestamo);
 }
 
-void buscarxCodigoPrestamo()
-{
+void eliminar(int CodigoPrestamo){
+    int pos = obtenerReg(CodigoPrestamo);
+    if(pos!= -1)
+    {
+        for(int i = pos; i < MAX_REG - 1; i++){
+            registros[i] = registros[i + 1];
+        }
+        cout << "Registro eliminado...\n";
+        cout << "-------------------------------------------------------------------------\n";
+        pos--;
+        guardarTodo();
+    } else {
+        cout << "Registro no encontrado..." << endl;
+        cout << "-------------------------------------------------------------------------\n";
+    }
+}
+
+void buscarxCodigoPrestamo() {
     int CodigoPrestamo;
     void showReg(INFORMACION &c);
 
     cout << "-------------------------------------------------------------------------\n";
-    cout << ANSI_COLOR_WH_BACK << "Busqueda de registro"  << ANSI_COLOR_RESET<<endl;
+    cout << ANSI_COLOR_WH_BACK << "Busqueda de registro"  << ANSI_COLOR_RESET << endl;
     cout << "Ingrese el codigo de prestamo: ";
     cin >> CodigoPrestamo;
-    if(obtenerReg(CodigoPrestamo)== -1){
+
+    cargarInfo();
+
+    INFORMACION c = buscar(CodigoPrestamo);
+
+    if (c.CodigoPrestamo != 0) {
+        showReg(c);
+    } else {
         cout << "Registro no encontrado...\n" << endl;
-        return;
     }
-    INFORMACION c{};
-    c = buscar(CodigoPrestamo);
-    showReg(c);
+
+    cout << "-------------------------------------------------------------------------\n";
 }
 
 void mostrarTPrestamos() 
@@ -280,7 +288,7 @@ void mostrarTPrestamos()
         cout << "No hay registros para mostrar.\n";
         return;
     }
-
+    cargarInfo();
     cout << "-------------------------------------------------------------------------\n";
     cout << ANSI_COLOR_WH_BACK << "Lista de prestamos registrados"  << ANSI_COLOR_RESET<<endl;
     cout << "-------------------------------------------------------------------------\n";
@@ -316,4 +324,146 @@ void showReg(INFORMACION &c){
     cout << "Nombre del fiador: " << c.NombreFiador << endl;
     cout << "Numero de cedula del fiador: " << c.CedulaFiador << endl;
     cout << "-------------------------------------------------------------------------\n";
+}
+
+int cargarInfo() 
+{
+    ifstream archivo("Prestamos.txt");
+
+    pos = 0;
+    while (archivo >> registros[pos].CodigoPrestamo) {
+        archivo.ignore();
+        archivo.getline(registros[pos].NombreCompleto, 50);
+        archivo.getline(registros[pos].NumeroCedula, 20);
+        archivo.getline(registros[pos].NumeroTelefonico, 20);
+        archivo.getline(registros[pos].CantPrestada, 20);
+        archivo.getline(registros[pos].FechaPrestamo, 20);
+        archivo.getline(registros[pos].PagoFinal, 20);
+        archivo.getline(registros[pos].Intereses, 20);
+        archivo.getline(registros[pos].NombreFiador, 50);
+        archivo.getline(registros[pos].CedulaFiador, 20);
+        pos++;
+    }
+    return pos;
+}
+
+void escribirInfo(const INFORMACION &c)
+{
+    ofstream archivo;
+
+    archivo.open("Prestamos.txt", ios::app);
+
+    archivo << c.CodigoPrestamo << endl;
+    archivo << c.NombreCompleto << endl;
+    archivo << c.NumeroCedula << endl;
+    archivo << c.NumeroTelefonico << endl;
+    archivo << c.CantPrestada << endl;
+    archivo << c.FechaPrestamo << endl;
+    archivo << c.PagoFinal << endl;
+    archivo << c.Intereses << endl;
+    archivo << c.NombreFiador << endl;
+    archivo << c.CedulaFiador << endl;
+
+    archivo.close();
+}
+
+void guardarTodo()
+{
+    ofstream archivo;
+
+    archivo.open("Prestamos.txt", ios::trunc | ios::out);
+
+    for(int i = 0; i<pos; i++)
+    {
+        archivo << registros[i].CodigoPrestamo << endl;
+        archivo << registros[i].NombreCompleto << endl;
+        archivo << registros[i].NumeroCedula << endl;
+        archivo << registros[i].NumeroTelefonico << endl;
+        archivo << registros[i].CantPrestada << endl;
+        archivo << registros[i].FechaPrestamo << endl;
+        archivo << registros[i].PagoFinal << endl;
+        archivo << registros[i].Intereses << endl;
+        archivo << registros[i].NombreFiador << endl;
+        archivo << registros[i].CedulaFiador << endl;
+    }
+    archivo.close();
+}
+
+int menuUsuario(){
+    setlocale(LC_ALL, "spanish");
+    int op;
+    cout << ANSI_COLOR_WH_BACK << "Bienvenido al sistema de prestamos"  << ANSI_COLOR_RESET<<endl;
+    cout << "-------------------------------------------------------------------------\n";
+    cout << "1. Registrar un nuevo usuario\n";
+    cout << "2. Ingresar\n";
+    cout << "-------------------------------------------------------------------------\n";
+    cout << "Digite la opcion: ";
+    cin >> op;
+    return op;
+}
+
+void usuarios()
+{
+    int op;
+    pos = cargarInfo();
+    do
+    {
+        op = menuUsuario();
+        switch (op)
+        {
+            case 1:
+                nuevoUsuario();
+                break;
+            case 2:
+                ingresar();
+                break;
+            default:
+                cout << "Opcion no valida, intente nuevamente.\n";
+        }
+
+    } while (op != 6);
+}
+
+void nuevoUsuario()
+{
+     string usuario, password;
+    cout << "Ingrese su nombre de usuario: ";
+    cin.ignore();
+    getline(cin, usuario);
+    cout << "Ingrese su contrasena: ";
+    getline(cin, password);
+    cout << "Informacion de usuario guardada...\n";
+    cout << "-------------------------------------------------------------------------\n";
+    
+    ofstream file("usuario.txt");
+    file << usuario << ":" << password << endl;
+    file.close();
+}
+
+void ingresar()
+{
+    string usuario, password, storedUsername, storedPassword;        
+    cout << "Ingrese su nombre de usuario: ";
+    cin.ignore();
+    getline(cin, usuario);
+    
+    ifstream fileRead("usuario.txt");
+    getline(fileRead, storedUsername, ':');
+    getline(fileRead, storedPassword);
+    fileRead.close();
+    
+    cout << "Ingrese su contraseña: ";
+    getline(cin, password);
+    
+    if (usuario == storedUsername && password == storedPassword) 
+    {
+        cout << "Contraseña correcta! Bienvenido, " << usuario << endl;
+        cout << "-------------------------------------------------------------------------\n";
+        principal();
+    } else 
+    {
+        cout << "Contraseña incorrecta. Intente de nuevo." << endl;
+        cout << "-------------------------------------------------------------------------\n";
+        usuarios();
+    }
 }

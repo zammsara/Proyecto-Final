@@ -7,6 +7,6 @@ using namespace std;
 int main(int argc, char const *argv[])
 {
     setlocale(LC_ALL, "spanish");
-    usuario();
+    usuarios();
     return 0;
 }
